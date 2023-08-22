@@ -1,0 +1,107 @@
+<section class="w-full mt-4">
+    <div class="flex">
+        <div class="field-section w-3/5 mr-8">
+            <form class="w-full" [formGroup]="articleForm">
+                <!-- {{ articleForm.value| json }} -->
+                <div class="w-full flex flex-col mb-4">
+                    <label for="label" class="text-lg mb-2">Libellé</label>
+                    <input type="text" name="label" id="label" class="rounded px-2 py-2 border-2 border-cyan-950/60"
+                        formControlName="label" placeholder="Ex: Chemise africain" (input)="onInputArticle($event)">
+                    <div class="text-sm text-red-500 mt-1" *ngIf="label.errors && label.dirty">
+                        {{ getErrorMessages("label", label.errors) }}
+                    </div>
+                    <div class="text-sm text-red-500 mt-1" *ngIf="articleExists && label.dirty">
+                        Le Libellé existe déjà
+                    </div>
+                </div>
+
+                <div class="w-full flex flex-col mb-4">
+                    <label for="price" class="text-lg mb-2">Prix</label>
+                    <input type="text" name="price" id="price" class="rounded px-2 py-2 border-2 border-cyan-950/60"
+                        formControlName="price" placeholder="Ex: 20000">
+                    <div class="text-sm text-red-500 mt-1" *ngIf="price.errors && price.dirty">
+                        {{ getErrorMessages("price", price.errors) }}
+                    </div>
+                </div>
+
+                <div class="w-full flex flex-col mb-4">
+                    <label for="stock" class="text-lg mb-2">Stock</label>
+                    <input type="text" name="stock" id="stock" class="rounded px-2 py-2 border-2 border-cyan-950/60"
+                        formControlName="stock" placeholder="Ex: 8">
+                    <div class="text-sm text-red-500 mt-1" *ngIf="stock.errors && stock.dirty">
+                        {{ getErrorMessages("stock", stock.errors) }}
+                    </div>
+                </div>
+
+                <div class="w-full flex flex-col mb-4">
+                    <label for="category" class="text-lg mb-2">Catégorie</label>
+                    <select id="category" class="px-4 py-2" formControlName="category" (change)="onCategoryChange($event)">
+                        <option value="">Séléctionner un Catégorie</option>
+                        <option *ngFor="let category of categories" value="{{ category.id }}" data-id="{{ category.order }}">{{ category.label }}</option>
+                    </select>
+                </div>
+
+                <div class="w-full flex flex-col mb-1">
+                    <label for="providers" class="mb-2">Fournisseurs</label>
+                    <input type="text" name="providers" id="providers"
+                        class="rounded px-2 py-2 border-2 border-cyan-950/60" (input)="searchProviders()"
+                        formControlName="provider" placeholder="Ex: 8">
+                </div>
+
+                <div class="w-full rounded relative" *ngIf="providers.length">
+                    <ul class="w-full absolute z-50 max-h-[180px] rounded overflow-auto bg-slate-200 top-0">
+                        <li *ngFor="let provider of providersToChoice" (click)="selectProvider(provider)"
+                            class="px-4 py-2 hover:bg-slate-400 hover:text-white rounded cursor-pointer w-full flex items-center justify-between">
+                            <span>{{ provider.fullname }}</span>
+                            <span>{{ provider.phone }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </form>
+        </div>
+
+        <div class="w-2/5 flex flex-col justify-between">
+            <div
+                class="md:w-11/12 lg:w-4/5 xl:w-3/5 relative left-1/2 -translate-x-1/2 rounded border-2 border-slate-600 h-[200px]">
+                <img [src]="imgPath" alt="" class="w-full h-full object-cover">
+                <div (click)="fileInput.click()"
+                    class="absolute top-0 left-0 w-full h-full bg-black/20 text-lg hover:text-white hover:text-xl hover:bg-black/60 cursor-pointer flex items-center justify-center">
+                    choisir une image
+                </div>
+                <input type="file" name="article-img" #fileInput (change)="displayImage(fileInput)" id="article-img" class="hidden">
+            </div>
+
+            <div class="reference w-full">
+                <label for="reference">Référence</label>
+                <input
+                    type="text" name="reference" id="reference" readonly
+                    [value]="'REF-'+ (articleForm.value.label.length >= 3 ? articleForm.value.label.slice(0, 3) : '') + '-' + selectedCategory + '-' + lastestId"
+                    class="w-full rounded px-2 py-2 border-2 border-gray-200 read-only:bg-gray-200 focus:outline-none hover:outline-none">
+            </div>
+        </div>
+    </div>
+
+    <div class="py-4">
+        <ul class="w-full flex items-center" *ngIf="selectedProviders.length != 0">
+            <li *ngFor="let checkProvider of selectedProviders"
+                class="px-2 py-1 min-w-[200px] mr-4 max-w-fit bg-slate-100 rounded cursor-pointer flex flex-col relative">
+                <svg class="w-5 h-5 absolute right-1 top-1 hover:fill-red-500 text-white dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                    fill="#f1948a" viewBox="0 0 20 20" (click)="unCheckedProvider(checkProvider.id ?? 0)">
+                    <path
+                        d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z" />
+                </svg>
+                <span>{{ checkProvider.fullname }}</span>
+                <span class="text-sm text-gray-500">{{ checkProvider.phone }}</span>
+            </li>
+        </ul>
+    </div>
+
+    <div class="py-4 flex justify-end items-center w-full">
+        <button
+            class="w-[250px] text-lg rounded bg-cyan-900 text-white py-2 disabled:bg-cyan-900/70"
+            [disabled]="articleForm.invalid || !selectedProviders.length" (click)="submit()">
+            Enregistrer
+        </button>
+    </div>
+
+</section>
