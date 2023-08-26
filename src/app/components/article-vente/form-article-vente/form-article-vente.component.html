@@ -1,0 +1,82 @@
+<section class="w-full mt-4">
+    <div class="flex">
+        <div class="field-section w-3/5 mr-8">
+            <form class="w-full">
+                <!-- {{ articleForm.value| json }} -->
+                <div class="w-full flex flex-col mb-4">
+                    <label for="label" class="text-lg mb-2">Libellé</label>
+                    <input type="text" name="label" id="label" class="rounded px-2 py-1 border-2 border-cyan-950/60"
+                        placeholder="Ex: Chemise africain">
+                    <div class="text-sm text-red-500 mt-1">
+                    </div>
+                    <div class="text-sm text-red-500 mt-1">
+                        Le Libellé existe déjà
+                    </div>
+                </div>
+
+                <div class="w-full flex flex-col mb-4">
+                    <label for="category" class="text-lg mb-2">Catégorie</label>
+                    <select id="category" class="px-4 py-2">
+                        <option value="">Séléctionner un Catégorie</option>
+                        <option></option>
+                    </select>
+                </div>
+
+                <div class="w-full flex mt-8">
+                    <div class="mb-4 w-1/2">
+                        <label for="manufacturing_cost" class="text-lg block mb-2">Coût de fabrication : </label>
+                        <input id="manufacturing_cost" type="text" readonly value="" placeholder="Ex: 185000 FCFA"
+                            class="rounded px-2 py-1 border-2 border-cyan-950/60 w-full">
+                    </div>
+                    <div class="mb-4 ml-10 w-1/2">
+                        <label for="promo" class="block text-lg mb-2">Marge : </label>
+                        <input type="text" id="promo" class="rounded px-2 py-1 border-2 border-cyan-950/60 w-full"
+                            placeholder="Ex: 10%" required>
+                    </div>
+                </div>
+
+                <div class="w-full flex mt-8">
+                    <div class="flex items-center mb-4">
+                        <input id="promo-checkbox" type="checkbox" value=""
+                            class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                        <label for="promo-checkbox" class="ml-2 font-medium text-lg">Promotion</label>
+                    </div>
+                    <div class="mb-4 flex items-center ml-10">
+                        <label for="promo" class="block mr-4 text-lg">Valeur : </label>
+                        <input type="text" id="promo" class="rounded px-2 py-1 border-2 border-cyan-950/60"
+                            placeholder="Ex: 10%" required>
+                    </div>
+                </div>
+
+                <div class="w-full mt-2">
+                    <label for="promo" class="block text-lg mb-2">Prix de vente : </label>
+                    <input type="text" id="promo" class="rounded px-2 py-1 border-2 border-cyan-950/60 w-full"
+                        placeholder="Ex: 176000 FCFA" required>
+                </div>
+            </form>
+        </div>
+
+        <div class="flex flex-col items-center justify-between w-2/5">
+            <div class="relative top-20 border-2 border-cyan-900 shadow-lg h-[200px] w-[200px] rounded-full">
+                <img [src]="" alt="" class="w-full h-full object-cover rounded-full">
+                <div (click)="fileInput.click()"
+                    class="absolute top-0 left-0 w-full h-full rounded-full bg-black/20 text-lg hover:text-white hover:text-xl hover:bg-black/60 cursor-pointer flex items-center justify-center">
+                    choisir une image
+                </div>
+                <input type="file" name="article-img" #fileInput accept="image/*" id="article-img" class="hidden">
+            </div>
+
+            <div class="reference w-full">
+                <label for="reference" class="mb-2">Référence</label>
+                <input type="text" name="reference" id="reference" readonly value="'REF-'"
+                    class="w-full rounded px-2 py-1 border-2 border-gray-200 read-only:bg-gray-200 focus:outline-none hover:outline-none">
+            </div>
+        </div>
+    </div>
+
+    <div class="py-4 flex justify-end items-center w-full mt-4">
+        <button class="w-[250px] text-lg rounded bg-cyan-900 text-white py-2 disabled:bg-cyan-900/70">
+            Enregistrer
+        </button>
+    </div>
+</section>

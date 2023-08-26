@@ -1,8 +1,8 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
-import { Approvisionnement } from 'src/app/models/Approvisionnement';
 import { Article } from 'src/app/models/Article';
 import { Category } from 'src/app/models/Category';
+import { ArticleData } from 'src/app/models/JsonResponse';
 import { Provider } from 'src/app/models/Provider';
 import { environment } from 'src/environments/environment.development';
 
@@ -11,23 +11,20 @@ import { environment } from 'src/environments/environment.development';
 	templateUrl: './form-article.component.html',
 	styleUrls: ['./form-article.component.css']
 })
-export class FormArticleComponent implements OnInit, OnChanges {
+export class FormArticleComponent implements OnInit {
 
 	articleForm!: FormGroup;
 	selectedProviders: Provider[] = [];
-	@Input() providers: Provider[] = [];
+	@Input() articleData : ArticleData = <ArticleData>{}
 	@Input() providersToChoice: Provider[] = [];
-	@Input() categories: Category[] = [];
-	@Input() approvisionnements: Approvisionnement[] = [];
 	selectedCategory: string = "";
 	@Input() lastestId: number = 0;
 	defaultImgPath: string = "assets/default.jpg";
 	imgPath: string = this.defaultImgPath;
 	image!: File;
 	@Input() articleExists: boolean = false;
-	@Input() articleAdded = false;
 	@Input() editMode = false;
-	@Input() articleToEdit!: Article;
+	articleToEdit!: Article;
 	@Input() modifiedArticle: FormData = new FormData;
 
 	@Output() addNewArticle: EventEmitter<FormData> = new EventEmitter<FormData>;
@@ -57,24 +54,14 @@ export class FormArticleComponent implements OnInit, OnChanges {
 		});
 	}
 
-	ngOnChanges(changes: SimpleChanges): void {
-		if ("articleAdded" in changes && changes['articleAdded'] && !changes['articleAdded'].firstChange) {
-			this.resetForm();
-		}
-
-		if ("articleToEdit" in changes && changes["articleToEdit"] && !changes['articleToEdit'].firstChange) {
-			this.fillArticleForm(this.articleToEdit);
-		}
-	}
-
 	fillArticleForm(article: Article) {
+		this.articleToEdit = article;
 		this.selectedProviders = [];
 		this.articleForm.patchValue({ label: article.label, price: article.price, stock: article.stock, category: article.category.id });
 		this.lastestId = article.category.order;
 		this.selectedCategory = article.category.label;
-		let appro = this.approvisionnements.filter(appro => appro.article_id == article.id);
-		let ids = appro.map(appro => appro.provider_id);
-		this.selectedProviders = this.providers.filter(provider => ids.includes(provider.id as number));
+		this.selectedProviders = [...article.providers];
+		this.lastestId = article.category.order;
 		this.imgPath = environment.storage + article.photo
 	}
 
@@ -87,14 +74,6 @@ export class FormArticleComponent implements OnInit, OnChanges {
 		this.inputArticleLabel.emit(value);
 	}
 
-	handleChangeData(fieldName: string, newValue: any) {
-		if (newValue != Object(this.articleToEdit)[fieldName]) {
-			this.modifiedArticle.append(fieldName, newValue);
-		} else {
-			this.modifiedArticle.delete(fieldName);
-		}
-	}
-
 	searchProviders(): void {
 		const searchKey = this.articleForm.value.provider;
 		if (searchKey == "") {
@@ -102,8 +81,8 @@ export class FormArticleComponent implements OnInit, OnChanges {
 			return;
 		}
 		let selectedProvidersId = this.selectedProviders.map(p => p.id);
-		this.providersToChoice = this.providers.filter(provider => {
-			return !selectedProvidersId.includes(provider.id) && provider.fullname.includes(searchKey)
+		this.providersToChoice = this.articleData.providers.filter(provider => {
+			return !selectedProvidersId.includes(provider.id) && provider.fullname.toLowerCase().includes(searchKey.toLowerCase())
 		});
 	}
 
@@ -115,6 +94,10 @@ export class FormArticleComponent implements OnInit, OnChanges {
 				fileReader.readAsDataURL(this.image);
 			}
 			fileReader.onload = () => {
+				if (!/^\w+\.(jpe?g|png|svg|gif|webp|bmp)$/.test(this.image.name.toLowerCase())) {
+					this.imgPath = this.defaultImgPath;
+					return;
+				}
 				this.imgPath = fileReader.result as string
 			}
 		}
@@ -164,7 +147,8 @@ export class FormArticleComponent implements OnInit, OnChanges {
 		this.categoryChange.emit({
 			id: +element.selectedOptions[0].value,
 			label: element.selectedOptions[0].innerText,
-			order: +element.selectedOptions[0].id
+			order: +element.selectedOptions[0].id,
+			type: ""
 		});
 		this.selectedCategory = element.selectedOptions[0].innerText;
 	}
@@ -176,14 +160,21 @@ export class FormArticleComponent implements OnInit, OnChanges {
 		this.articleForm.reset({label: "", stock: "", price: "", category: ""});
 	}
 
+	handleChangeData(fieldName: string, newValue: any) {
+		if (newValue != Object(this.articleToEdit)[fieldName]) {
+			this.modifiedArticle.append(fieldName, newValue);
+		} else {
+			this.modifiedArticle.delete(fieldName);
+		}
+	}
+
 	handleChangeProvider() {
-		let providers = this.approvisionnements
-			.filter(appro => appro.article_id == this.articleToEdit.id)
-			.map(appro => appro.provider_id);
 		let providersSelected = this.selectedProviders.map(provider => provider.id);
-		let same = providers
-			.every(provider => providersSelected.includes(provider)) && providersSelected
-			.every(provider => providers.includes(provider as number));
+		let providerToEdit = this.articleToEdit.providers.map(providerItem => providerItem.id);
+		
+		let same = this.articleToEdit.providers
+			.every(provider => providersSelected.includes(provider.id)) && providersSelected
+			.every(provider => providerToEdit.includes(provider as number));
 		if (same) {
 			return;
 		}
@@ -191,16 +182,18 @@ export class FormArticleComponent implements OnInit, OnChanges {
 			this.modifiedArticle.delete('providers')
 		}
 		this.modifiedArticle.append("providers", this.selectedProviders.map(provider => provider.id).join());
-		console.log(this.modifiedArticle);
 	}
 
 	submit() {
 		if (this.editMode) {
-			this.modifiedArticle.append('id', this.articleToEdit.id?.toString() as string);
 			this.handleChangeData('label', this.articleForm.value.label);
 			this.handleChangeData('price', this.articleForm.value.price);
 			this.handleChangeData('stock', this.articleForm.value.stock);
-			this.handleChangeData('category_id', this.articleForm.value.category);
+			if (this.articleForm.value.category != this.articleToEdit.category.id) {
+				this.modifiedArticle.append("category_id", this.articleForm.value.category);
+			} else {
+				this.modifiedArticle.delete("category_id");
+			}
 			let ref = 'REF-' + this.articleForm.value.label + '-' + this.selectedCategory + '-' + this.lastestId;
 			if (this.articleToEdit.reference != ref) {
 				if ("reference" in this.modifiedArticle) {
@@ -213,6 +206,8 @@ export class FormArticleComponent implements OnInit, OnChanges {
 				this.modifiedArticle.append('photo', this.image);
 			}
 			this.handleChangeProvider();
+			console.log(this.modifiedArticle);
+			
 			this.addNewArticle.emit(this.modifiedArticle);
 			return;
 		}

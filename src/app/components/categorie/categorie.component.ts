@@ -1,7 +1,8 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Category } from 'src/app/models/Category';
 import { JsonResponse, Pagination } from 'src/app/models/JsonResponse';
 import { CategoryService } from 'src/app/services/category.service';
+import { environment } from 'src/environments/environment.development';
 
 @Component({
 	selector: 'app-categorie',
@@ -17,11 +18,16 @@ export class CategorieComponent implements OnInit, OnDestroy {
 
 	labelInput: string = "";
 	labelExists = false;
+	typeChecked = false;
+	typeValue: string = "";
 	labelInputInvalid = false;
 	editChecked = false;
 	allCategoriesChecked = false;
 	editCategory: Category | null = null;
+	categoriesToDelete: Category[] = <Category[]>{};
 	input: boolean = false;
+	imagePath = environment.storage;
+	confirmDeleting: boolean = false;
 
 	checkedCategories: number[] = [];
 
@@ -40,11 +46,11 @@ export class CategorieComponent implements OnInit, OnDestroy {
 
 	loadCategories() {
 		this.categories = [];
-		this.categoryService.getCategories<Pagination<Category[]>>(this.perPage, this.currentPage).subscribe(
-			(response: JsonResponse<Pagination<Category[]>>) => {
-				if (Array.isArray(response.data.data)) {
-					this.categories = response.data.data;
-					this.totalPage = Math.ceil(response.data.total / response.data.per_page);
+		this.categoryService.paginate<Pagination<Category[]>>(this.perPage, this.currentPage).subscribe(
+			(response: Pagination<Category[]>) => {
+				if (Array.isArray(response.data)) {
+					this.categories = response.data;
+					this.totalPage = Math.ceil(response.total / response.per_page);
 					this.calculateTotalPage()
 				}
 			},
@@ -62,6 +68,11 @@ export class CategorieComponent implements OnInit, OnDestroy {
 			this.labelInput = "";
 			this.input = false;
 		}
+	}
+
+	toggleCategoryType(event: HTMLInputElement) {
+		this.typeChecked = true;
+		this.typeValue = event.id
 	}
 
 	onCategoryChange(event: Event, category: Category) {
@@ -95,7 +106,7 @@ export class CategorieComponent implements OnInit, OnDestroy {
 			return;
 		}
 
-		this.categoryService.searchCategory(this.labelInput).subscribe(
+		this.categoryService.search(this.labelInput).subscribe(
 			(response: JsonResponse<Category[]>) => {
 				if (Array.isArray(response.data)) {
 					this.labelExists = response.data.length !== 0
@@ -107,7 +118,7 @@ export class CategorieComponent implements OnInit, OnDestroy {
 
 	addCategory() {
 		if (!this.editChecked) {
-			this.categoryService.addCategory({ "label": this.labelInput, order: 0 }).subscribe(
+			this.categoryService.create({ "label": this.labelInput, type: this.typeValue }).subscribe(
 				(response: JsonResponse<Category[]>) => {
 					this.labelInput = "";
 					if (Array.isArray(response.data)) {
@@ -122,7 +133,7 @@ export class CategorieComponent implements OnInit, OnDestroy {
 			this.editCategory.label = this.labelInput;
 		}
 
-		this.categoryService.editCategory(this.editCategory as Category).subscribe(
+		this.categoryService.update<Category>(this.editCategory?.id as number, this.editCategory as Category).subscribe(
 			(response) => {
 				this.labelInput = "";
 				let categoryUpdated = this.categories.find(category => category.id == this.editCategory?.id);
@@ -151,13 +162,22 @@ export class CategorieComponent implements OnInit, OnDestroy {
 
 	deleteCategory() {
 		if (this.editChecked) {
-			this.categoryService.deleteCategory({ ids: this.checkedCategories }).subscribe(
+			this.categoryService.delete(0, { ids: this.checkedCategories }).subscribe(
 				(response) => {
 					this.categories = this.categories.filter(category => !this.checkedCategories.includes(category.id as number))
+					this.confirmDeleting = false;
 					console.log(response);
 				}
 			)
 		}
+	}
+
+	onDeleteCategory() {
+		this.confirmDeleting = true;
+	}
+
+	onCancelDeleting() {
+		this.confirmDeleting = false;
 	}
 
 	onPageChanged(page: number) {

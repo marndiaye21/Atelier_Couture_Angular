@@ -37,7 +37,7 @@
                     <label for="category" class="text-lg mb-2">Catégorie</label>
                     <select id="category" class="px-4 py-2" formControlName="category" (change)="onCategoryChange($event)">
                         <option value="">Séléctionner un Catégorie</option>
-                        <option *ngFor="let category of categories" value="{{ category.id }}" data-id="{{ category.order }}">{{ category.label }}</option>
+                        <option *ngFor="let category of articleData.categories!" value="{{ category.id }}" data-id="{{ category.order }}">{{ category.label }}</option>
                     </select>
                 </div>
 
@@ -48,7 +48,7 @@
                         formControlName="provider" placeholder="Ex: 8">
                 </div>
 
-                <div class="w-full rounded relative" *ngIf="providers.length">
+                <div class="w-full rounded relative" *ngIf="articleData.providers?.length">
                     <ul class="w-full absolute z-50 max-h-[180px] rounded overflow-auto bg-slate-200 top-0">
                         <li *ngFor="let provider of providersToChoice" (click)="selectProvider(provider)"
                             class="px-4 py-2 hover:bg-slate-400 hover:text-white rounded cursor-pointer w-full flex items-center justify-between">
@@ -68,7 +68,7 @@
                     class="absolute top-0 left-0 w-full h-full bg-black/20 text-lg hover:text-white hover:text-xl hover:bg-black/60 cursor-pointer flex items-center justify-center">
                     choisir une image
                 </div>
-                <input type="file" name="article-img" #fileInput (change)="displayImage(fileInput)" id="article-img" class="hidden">
+                <input type="file" name="article-img" #fileInput accept="image/*" (change)="displayImage(fileInput)" id="article-img" class="hidden">
             </div>
 
             <div class="reference w-full">

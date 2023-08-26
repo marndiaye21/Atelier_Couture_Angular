@@ -1,0 +1,13 @@
+<div class="alert opacity-0 left-10 max-w-2xl flex items-center justify-between fixed bottom-8 p-6
+           rounded-lg bg-white shadow-2xl border-l-4 border-green-500" #alert [class.active]="show" [class.inactive]="!show">
+    <svg class="mr-4 w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+        fill="none" viewBox="0 0 20 20">
+        <path stroke="#2ecc71" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="m7 10 2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+    </svg>
+    <div class="flex flex-col">
+        <h3 class="text-lg font-semibold" id="title">Licence 1: mise à jour efféctuée</h3>
+        <span class="text-sm" id="content">Des disciplines ont étés supprimées depuis cette classe</span>
+    </div>
+    <span class="text-3xl text-red-700/80 ml-4 cursor-pointer" id="closeAlert">&times;</span>
+</div>

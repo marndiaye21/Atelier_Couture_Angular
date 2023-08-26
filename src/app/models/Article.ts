@@ -1,13 +1,8 @@
-import { Category } from "./Category";
+import { AbstractArticle} from "./AbstractArticle";
+import { AbstractArticleData } from "./AbstractArticleData";
 import { Provider } from "./Provider";
 
-export interface Article {
-    id?: number;
-    label: string;
+export interface Article extends AbstractArticle, AbstractArticleData {
     price: number;
-    stock: string;
-    category: Category;
-    reference: string;
-    photo: string;
     providers: Provider[]
 }

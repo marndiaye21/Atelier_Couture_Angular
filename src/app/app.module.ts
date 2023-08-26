@@ -12,6 +12,11 @@ import { ArticleComponent } from './components/article/article.component';
 import { FormArticleComponent } from './components/article/form-article/form-article.component';
 import { ArticleListComponent } from './components/article/article-list/article-list.component';
 import { ArticleItemComponent } from './components/article/article-list/article-item/article-item.component';
+import { AlertComponent } from './components/alert/alert.component';
+import { ArticleVenteComponent } from './components/article-vente/article-vente.component';
+import { ArticleVenteListComponent } from './components/article-vente/article-vente-list/article-vente-list.component';
+import { ArticleVenteItemComponent } from './components/article-vente/article-vente-list/article-vente-item/article-vente-item.component';
+import { FormArticleVenteComponent } from './components/article-vente/form-article-vente/form-article-vente.component';
 
 @NgModule({
   declarations: [
@@ -23,6 +28,11 @@ import { ArticleItemComponent } from './components/article/article-list/article-
     FormArticleComponent,
     ArticleListComponent,
     ArticleItemComponent,
+    AlertComponent,
+    ArticleVenteComponent,
+    ArticleVenteListComponent,
+    ArticleVenteItemComponent,
+    FormArticleVenteComponent,
   ],
   imports: [
     BrowserModule,

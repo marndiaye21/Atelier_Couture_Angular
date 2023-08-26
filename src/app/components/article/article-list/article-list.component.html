@@ -10,7 +10,7 @@
     </div>
 
     <div *ngIf="loading">
-        <div class="grid grid-cols-6 h-16 bg-neutral-300 rounded mb-2 opacity-100 loading" *ngFor="let article of articles">
+        <div class="grid grid-cols-6 h-16 bg-neutral-300 rounded mb-2 opacity-100 loading" *ngFor="let article of articles!">
             <div class="border-r-2 border-neutral-800 flex items-center justify-center">
                 <div class="w-14 h-14 bg-neutral-400 rounded-full"></div>
             </div>
@@ -44,7 +44,7 @@
     </div>
 
     <div *ngIf="!loading">
-        <app-article-item *ngFor="let article of articles" [article]="article" (deleteArticle)="onDeleteArticle($event)"
+        <app-article-item *ngFor="let article of articles?.reverse()" [article]="article" (deleteArticle)="onDeleteArticle($event)"
             (editArticle)="onEditArticle($event)">
         </app-article-item>
     </div>

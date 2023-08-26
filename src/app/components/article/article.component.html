@@ -6,19 +6,20 @@
 
         <app-form-article
             (addNewArticle)="addNewArticle($event)" (categoryChange)="onCategoryChange($event)"
-            (inputArticleLabel)="onInputArticleLabel($event)"  [lastestId]="lastId" [editMode]="editMode" [articleToEdit]="articleToEdit"
-            [categories]="categories" [providers]="providers" [approvisionnements]="approvisionnements"
-            [articleExists]="articleExists" [articleAdded]="articleAdded">
+            (inputArticleLabel)="onInputArticleLabel($event)"  [lastestId]="lastId" [editMode]="editMode"
+            [articleData]="articleData" [articleExists]="articleExists">
         </app-form-article>
 
         <div class="border border-gray-300 my-4"></div>
 
-        <app-article-list [articles]="articles" [loading]="loading"
+        <app-article-list [articles]="response.data" [loading]="loading"
             (deleteArticle)="onDeleteArticle($event)" (editArticle)="onEditArticle($event)">
         </app-article-list>
 
         <div class="flex items-center justify-center">
-            <app-pagination [perPage]="perPage" [pages]="pages" [currentPage]="currentPage" (pageChanged)="onPageChanged($event)"></app-pagination>
+            <app-pagination [perPage]="response.per_page" [pages]="response.pages" (pageChanged)="onPageChanged($event)"></app-pagination>
         </div>
     </div>
+
+    <!-- <app-alert></app-alert> -->
 </section>

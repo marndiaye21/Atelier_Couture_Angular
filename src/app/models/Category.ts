@@ -1,8 +1,8 @@
-export interface Category {
-    id?: number,
-    label: string,
+import { AbstractArticle} from "./AbstractArticle";
+import { Article } from "./Article";
+
+export interface Category extends AbstractArticle {
     order: number,
-    created_at?: string,
-    updated_at?: string,
-    deleted_at?: string,
+    type: string,
+    articles?: Article[]
 }

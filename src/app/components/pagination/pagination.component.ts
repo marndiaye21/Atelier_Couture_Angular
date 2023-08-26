@@ -15,7 +15,6 @@ export class PaginationComponent {
 	@Output() pageChanged: EventEmitter<number> = new EventEmitter<number>;
 
 	goToPage(pageNumber: number) {
-		
 		this.currentPage = pageNumber;
 		this.pageChanged.emit(this.currentPage);
 	}

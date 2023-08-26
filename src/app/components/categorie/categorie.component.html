@@ -1,4 +1,28 @@
-<section class="h-screen fixed w-full">
+<section class="h-screen w-full">
+
+    <div class="fixed z-50 top-0 left-0 w-full h-full bg-gray-600/50 flex items-center justify-center"
+        *ngIf="confirmDeleting">
+        <div class="w-2/5 rounded bg-white shadow-lg">
+            <header class="flex items-center bg-gray-100 p-4 border-b border-gray-400">
+                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                    fill="#f1c40f" viewBox="0 0 20 20">
+                    <path
+                        d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                </svg>
+                <span class="ml-4 text-xl text-gray-900 font-semibold rounded-t">
+                    Attention
+                </span>
+            </header>
+            <p class="px-4 p-3 text-lg">Cet catégorie est relié à des articles existants</p>
+            <p class="px-4 pb-3 text-sm border-b border-gray-400">Voulez-vous continuer ?</p>
+            <div class="p-4 flex justify-end">
+                <button class="px-2 py-1 bg-slate-400 mr-3 text-white rounded"
+                    (click)="onCancelDeleting()">Annuler</button>
+                <button class="px-2 py-1 bg-green-500  text-white rounded" (click)="deleteCategory()">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
     <div class="h-full flex items-center justify-center">
         <div class="w-4/5 px-4 py-2 rounded shadow-lg">
             <header class="flex items-center justify-end space-x-2 mt-2 mb-6">
@@ -15,23 +39,45 @@
                 <span class="text-gray-600">Modification</span>
             </header>
 
-            <div class="flex items-center space-x-3">
-                <label for="label" class="text-lg font-medium">Libellé</label>
-                <input type="text" name="label" id="label" class="w-1/4 px-4 py-1 border border-gray-200 rounded shadow"
-                    placeholder="Ex: Tissu en popeline" [(ngModel)]="labelInput" (input)="onInputChange()" [disabled]="editChecked && !input">
-                <button class="px-2 py-1 bg-cyan-950 rounded text-white disabled:bg-gray-500"
-                    [disabled]="labelInput.length < 3 || labelExists" (click)="addCategory()">Ok</button>
-            </div>
+            <div>
+                <div class="flex flex-col space-y-3 w-2/5">
+                    <label for="label" class="text-lg font-medium bg-cyan-950 text-white max-w-fit px-2 py-1 rounded">Libellé</label>
+                    <input type="text" name="label" id="label"
+                        class="w-full px-4 py-2 border border-gray-200 rounded shadow"
+                        placeholder="Ex: Tissu en popeline" [(ngModel)]="labelInput" (input)="onInputChange()"
+                        [disabled]="editChecked && !input">
+                </div>
 
-            <div class="text-sm font-semibold text-red-500 mt-3" *ngIf="labelInputInvalid">
-                <div *ngIf="labelInput.length === 0">
-                    Le Libellé de la catégorie est requis
+                <div class="text-sm font-semibold text-red-500 mt-3" *ngIf="labelInputInvalid">
+                    <div *ngIf="labelInput.length === 0">
+                        Le Libellé de la catégorie est requis
+                    </div>
+                    <div *ngIf="labelInput.length > 0 && labelInput.length < 3">
+                        Le libellé doit être au minimum 3 caractères
+                    </div>
+                    <div *ngIf="labelExists">
+                        Le nom du catégorie existe déjà
+                    </div>
                 </div>
-                <div *ngIf="labelInput.length > 0 && labelInput.length < 3">
-                    Le libellé doit être au minimum 3 caractères
+
+                <div class="flex flex-col space-y-2 w-2/5 mt-6 shadow-lg mb-6">
+                    <label for="type" class="text-lg font-medium mb-2 bg-cyan-950 text-white max-w-fit px-2 py-1 rounded">Type de catégorie</label>
+                    <div class="flex items-center">
+                        <input type="radio" name="type" id="confection" class="p-4 w-10" #confection_type
+                            (change)="toggleCategoryType(confection_type)">
+                        <label for="confection">Confection</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="radio" name="type" id="vente" class="p-4 w-10" #purchase_type
+                            (change)="toggleCategoryType(purchase_type)">
+                        <label for="vente">Vente</label>
+                    </div>
                 </div>
-                <div *ngIf="labelExists">
-                    Le nom du catégorie existe déjà
+
+                <div class="w-2/5 flex justify-end">
+                    <button class="px-2 py-1 bg-cyan-950 rounded text-white disabled:bg-gray-500 relative"
+                        [disabled]="labelInput.length < 3 || labelExists || !typeChecked"
+                        (click)="addCategory()">Valider</button>
                 </div>
             </div>
 
@@ -39,19 +85,20 @@
                 <span class="text-lg font-semibold">Liste des Catégories</span>
                 <button class="px-4 py-1 bg-red-500 rounded text-white disabled:bg-red-500/70"
                     [disabled]="!editChecked || checkedCategories.length === 0"
-                    (click)="deleteCategory()">supprimer</button>
+                    (click)="onDeleteCategory()">supprimer</button>
             </div>
 
             <div class="border-2 border-cyan-950 rounded min-h-[250px]">
-                <div class="grid grid-cols-[40px_1fr] border-b-2 border-cyan-950">
+                <div class="grid grid-cols-[80px_1fr_1fr] border-b-2 border-cyan-950">
                     <div class="py-2 flex items-center justify-center">
                         <input id="default-checkbox" type="checkbox" (change)="checkAllCategories()"
                             [disabled]="!editChecked" [(ngModel)]="allCategoriesChecked"
                             class="w-4 h-4 disabled:bg-gray-800 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                     </div>
                     <div class="py-2 px-3 font-semibold border-l-2 border-cyan-950">Libellé</div>
+                    <div class="py-2 px-3 font-semibold border-l-2 border-cyan-950">Type de catégorie</div>
                 </div>
-                <div class="grid grid-cols-[40px_1fr]" *ngFor="let category of categories">
+                <div class="grid grid-cols-[80px_1fr_1fr]" *ngFor="let category of categories">
                     <div class="flex items-center justify-center">
                         <input id="default-checkbox" type="checkbox" (change)="onCategoryChange($event, category)"
                             [disabled]="!editChecked"
@@ -60,11 +107,13 @@
                     </div>
                     <div class="py-2 px-3 border-l-2 border-cyan-950" (click)="updateCategoryMode(category)">{{
                         category.label }}</div>
+                    <div class="py-2 px-3 border-l-2 border-cyan-950" (click)="updateCategoryMode(category)">{{
+                        category.type }}</div>
                 </div>
             </div>
 
-            <app-pagination
-                [perPage]="perPage" [pages]="pages" [currentPage]="currentPage" (pageChanged)="onPageChanged($event)">
+            <app-pagination [perPage]="perPage" [pages]="pages" [currentPage]="currentPage"
+                (pageChanged)="onPageChanged($event)">
             </app-pagination>
 
         </div>

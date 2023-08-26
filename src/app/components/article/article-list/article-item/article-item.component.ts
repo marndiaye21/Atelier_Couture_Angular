@@ -32,6 +32,7 @@ export class ArticleItemComponent {
 	}
 
 	onEditArticle() {
+		console.log(this.article);
 		this.editArticle.emit(this.article);
 	}
 }

@@ -1,0 +1,33 @@
+<section class="w-full py-2">
+    <h1 class="text-2xl mb-10 font-semibold">Liste des articles de vente</h1>
+
+    <div class="article-list-container bg-white/70">
+        <div class="rounded-lg bg-white w-[400px] min-h-[400px] shadow-lg" *ngFor="let article of articleVente!">
+            <div class="flex items-center justify-center py-4 bg-white rounded-lg">
+                <div class="w-48 h-48 border border-gray-200 shadow-lg rounded-full">
+                    <img [src]="imagePath + article.photo" alt="" class="w-full h-full rounded-full object-cover">
+                </div>
+            </div>
+            <div class="w-full px-2 overflow-auto h-40">
+                <h1 class="text-lg font-semibold py-3">Articles de confection</h1>
+                <div class="bg-gray-100 rounded shadow grid grid-cols-[100px_1fr] h-14 mb-2"
+                    *ngFor="let confection of article.articles_confection">
+                    <div class="flex items-center justify-center">
+                        <div class="w-12 h-12">
+                            <img [src]="imagePath + confection.photo" alt=""
+                                class="w-full h-full rounded-full object-cover">
+                        </div>
+                    </div>
+                    <div class="flex flex-col justify-center">
+                        <div class="flex items-center">{{ confection.label.length <= 33 ? confection.label : confection.label.slice(0, 32) + '...' }}</div>
+                        <div class="text-sm text-gray-600">Quantité: {{ confection.stock }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="w-full flex items-center justify-end px-2 py-3 bg-neutral-100">
+                <button class="px-3 py-1 text-white bg-yellow-500 rounded-lg mr-4">Modifier</button>
+                <button class="px-3 py-1 text-white bg-red-500 rounded-lg">Supprimer</button>
+            </div>
+        </div>
+    </div>
+</section>
