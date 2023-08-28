@@ -22,11 +22,7 @@ export class ArticleVenteComponent implements OnInit {
 				this.articleVenteData = response.data as ArticleVenteData;
 			}
 		});
-		this.articleVenteService.paginate<Pagination<ArticleVente[]>>(this.response.per_page ?? 5).subscribe({
-			next: (response) => {
-				this.response = response
-			},
-		});
+		this.articleVenteService.paginate<Pagination<ArticleVente[]>>(this.response.per_page ?? 6).subscribe(this.articleVenteListeObserver);
 	}
 
 	onAddArticleVente(formData: FormData) {
@@ -38,5 +34,25 @@ export class ArticleVenteComponent implements OnInit {
 				}
 			},
 		})
+	}
+
+	calculateTotalPage() {
+        this.response.pages = [];
+        for (let i = 1; i <= this.response.total; i++) {
+            this.response.pages.push(i);
+        }
+    }
+
+	onPageChanged(page: number) {
+		this.articleVenteService.paginate<Pagination<ArticleVente[]>>(this.response.per_page, page).subscribe(this.articleVenteListeObserver);
+	}
+
+	articleVenteListeObserver = {
+		next: (response: Pagination<ArticleVente[]>) => {
+			this.response.data = response.data
+            this.response.total = Math.ceil(response.total / response.per_page);
+            this.response.per_page = response.per_page;
+            this.calculateTotalPage();
+		}
 	}
 }

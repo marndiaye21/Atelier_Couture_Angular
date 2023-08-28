@@ -5,7 +5,7 @@
                 <div class="w-full flex space-x-4 items-center">
                     <div class="w-1/2 flex flex-col">
                         <label for="label" class="text-lg mb-2">Libellé</label>
-                        <input type="text" name="label" id="label" formControlName="label" (input)="this.generateRefernce()"
+                        <input type="text" name="label" id="label" formControlName="label" (input)="generateRefernce()"
                             class="rounded px-2 py-1 border-2 border-cyan-950/60" placeholder="Ex: Chemise africain">
                     </div>
 
@@ -39,44 +39,37 @@
                     </svg>
                 </div>
                 <div class="w-full border-2 border-gray-400 mt-3 rounded">
-                    <div class="w-full grid grid-cols-2 gap-3 border-b-2 border-gray-800">
+                    <div class="w-full grid grid-cols-3 gap-3 border-b-2 border-gray-800">
                         <label for="label_article_confection"
                             class="text-lg mb-2 border-r-2 px-4 py-1 bg-transparent">Libellé</label>
                         <label for="stock_article_confection" class="text-lg mb-2 py-1 bg-transparent">Quantité</label>
+                        <label for="action_buttons" class="text-lg mb-2 py-1 bg-transparent">Actions</label>
                     </div>
 
                     <div formArrayName="articles_confection">
                         <div class="relative"
                             *ngFor="let article_confection of articleConfection.controls; let i = index">
-                            <div class="w-full grid grid-cols-2 gap-3 px-3 py-2" [formGroupName]="i">
+                            <div class="w-full grid grid-cols-3 gap-3 px-3 py-2" [formGroupName]="i">
                                 <input type="text" formControlName="label" name="label_{{ i }}" id="label_{{ i }}"
-                                    #confection_label (input)="onArticleConfectionLabelInput($event, i)"
+                                    (input)="onArticleConfectionLabelInput($event, i)"
                                     class="rounded px-2 py-1 border-2 border-cyan-950/60" placeholder="Ex: Bouton">
                                 <input type="text" formControlName="stock" name="stock_{{ i }}" id="stock_{{ i }}"
-                                    #confection_stock
-                                    (input)="onArticleConfectionStockInput(confection_stock.value, confection_label.value)"
+                                    (input)="onArticleConfectionStockInput()"
                                     class="rounded px-2 py-1 border-2 border-cyan-950/60" placeholder="Ex: 4">
-                            </div>
-                            <div class="w-full grid grid-cols-2 gap-4 items-center">
-                                <div class="text-sm text-red-500 mt-1"></div>
-                                <div class="text-sm text-red-500 mt-1"
-                                    *ngIf="!stockQuantityValid && stockQuantityErrors.includes(confection_label.value)">
-                                    La quantité de stock de l'article est insuffisant
-                                </div>
-                            </div>
-                            <div
-                                class="actions bg-gray-200 absolute top-1/2 -translate-y-1/2 left-[102%] px-2 py-1 rounded flex items-center space-x-2">
-                                <div class="w-6 h-6 cursor-pointer bg-gray-400 rounded" title="vider les champs"
-                                    (click)="removeArticleConfectionAt(i)">
-                                    <img src="assets/broom.png" alt="">
-                                </div>
-                                <div class="w-6 h-6" title="supprimer les champs"
-                                    (click)="onClickDeleteArticleConfection(i)">
-                                    <svg class="w-6 h-6 cursor-pointer" aria-hidden="true"
-                                        xmlns="http://www.w3.org/2000/svg" fill="#e74c3c" viewBox="0 0 18 20">
-                                        <path
-                                            d="M17 4h-4V2a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v2H1a1 1 0 0 0 0 2h1v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6h1a1 1 0 1 0 0-2ZM7 2h4v2H7V2Zm1 14a1 1 0 1 1-2 0V8a1 1 0 0 1 2 0v8Zm4 0a1 1 0 0 1-2 0V8a1 1 0 0 1 2 0v8Z" />
-                                    </svg>
+                                <div
+                                    class="actions bg-gray-200 px-2 py-1 rounded flex items-center justify-center space-x-4">
+                                    <div class="w-6 h-6 cursor-pointer bg-gray-400 rounded" title="vider les champs"
+                                        (click)="removeArticleConfectionAt(i)">
+                                        <img src="assets/broom.png" alt="">
+                                    </div>
+                                    <div class="w-6 h-6" title="supprimer les champs"
+                                        (click)="onClickDeleteArticleConfection(i)">
+                                        <svg class="w-6 h-6 cursor-pointer" aria-hidden="true"
+                                            xmlns="http://www.w3.org/2000/svg" fill="#e74c3c" viewBox="0 0 18 20">
+                                            <path
+                                                d="M17 4h-4V2a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v2H1a1 1 0 0 0 0 2h1v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6h1a1 1 0 1 0 0-2ZM7 2h4v2H7V2Zm1 14a1 1 0 1 1-2 0V8a1 1 0 0 1 2 0v8Zm4 0a1 1 0 0 1-2 0V8a1 1 0 0 1 2 0v8Z" />
+                                        </svg>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -164,9 +157,9 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="py-4 flex justify-end items-center w-full mt-4">
-            <button class="w-[250px] text-lg rounded bg-cyan-900 text-white py-2 disabled:bg-cyan-900/70">
+            <button class="w-[250px] text-lg rounded bg-cyan-900 text-white py-2 disabled:bg-cyan-900/70" [disabled]="articleVenteForm.invalid">
                 Enregistrer
             </button>
         </div>

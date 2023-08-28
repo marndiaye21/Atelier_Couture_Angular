@@ -118,12 +118,9 @@ export class FormArticleVenteComponent implements OnInit {
 		}));
 	}
 
-	onArticleConfectionStockInput(stockQuantity: string, label: string) {
-		this.checkQuantityValidity(stockQuantity, label);
-		if (this.stockQuantityValid) {
-			this.manufacturingCost.setValue(this.calculateManufacturingCost());
-			this.costManufacturing = +this.manufacturingCost.value
-		}
+	onArticleConfectionStockInput() {
+		this.manufacturingCost.setValue(this.calculateManufacturingCost());
+		this.costManufacturing = +this.manufacturingCost.value
 	}
 
 	calculateManufacturingCost() {
@@ -134,19 +131,6 @@ export class FormArticleVenteComponent implements OnInit {
 			}
 		});
 		return manufacturingCostTotal;
-	}
-
-	checkQuantityValidity(stockQuantity: string, label: string) {
-		if (label) {
-			let articleConf = this.articleVenteData.articles_confection.find(article => article.label.toLowerCase() == label.toLowerCase());
-			if (articleConf && (+stockQuantity > +articleConf.stock)) {
-				this.stockQuantityValid = false;
-				this.stockQuantityErrors.push(label);
-			} else {
-				this.stockQuantityValid = true;
-				this.stockQuantityErrors = this.stockQuantityErrors.filter(error => error.toLowerCase() != label.toLowerCase());
-			}
-		}
 	}
 
 	onArticleConfectionLabelInput(event: Event, index: number) {

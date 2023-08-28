@@ -3,13 +3,13 @@
 
     <div class="bg-white/70" id="article-list-container">
         <div class="rounded-lg bg-white min-h-[400px] shadow-lg mr-14 mb-14 flex flex-col justify-between" *ngFor="let article of articleVente!">
-            <div class="grid grid-cols-[100px_1fr] px-2 py-2 bg-white rounded-lg">
+            <div class="grid grid-cols-[100px_1fr] px-2 py-2 rounded-lg shadow-lg" style="background-color: #679436;">
                 <div class="w-20 h-20 border mr-4 border-gray-200 shadow-lg rounded-full">
                     <img [src]="imagePath + article.photo" alt="" class="w-full h-full rounded-full object-cover">
                 </div>
                 <div>
-                    <div class="text-lg text-neutral-700 font-semibold">{{ article.label }}</div>
-                    <div class="text-sm text-gray-600">Quantité: {{ article.stock }}</div>
+                    <div class="text-lg text-gray-200 font-semibold">{{ article.label }}</div>
+                    <div class="text-sm text-gray-200">Quantité: {{ article.stock }}</div>
                 </div>
             </div>
             <div class="w-full px-2 overflow-auto h-64">
@@ -29,8 +29,8 @@
                 </div>
             </div>
             <div class="w-full flex items-center justify-end px-2 py-3 bg-neutral-100">
-                <button class="px-3 py-1 text-white bg-yellow-500 rounded-lg mr-4">Modifier</button>
-                <button class="px-3 py-1 text-white bg-red-500 rounded-lg">Supprimer</button>
+                <button class="px-3 py-1 text-white rounded-lg mr-4" style="background-color: #0a2e36aa;">Modifier</button>
+                <button class="px-3 py-1 text-white bg-red-500/80 rounded-lg">Supprimer</button>
             </div>
         </div>
     </div>
