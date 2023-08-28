@@ -1,14 +1,18 @@
 <section class="w-full py-2">
     <h1 class="text-2xl mb-10 font-semibold">Liste des articles de vente</h1>
 
-    <div class="article-list-container bg-white/70">
-        <div class="rounded-lg bg-white w-[400px] min-h-[400px] shadow-lg" *ngFor="let article of articleVente!">
-            <div class="flex items-center justify-center py-4 bg-white rounded-lg">
-                <div class="w-48 h-48 border border-gray-200 shadow-lg rounded-full">
+    <div class="bg-white/70" id="article-list-container">
+        <div class="rounded-lg bg-white min-h-[400px] shadow-lg mr-14 mb-14 flex flex-col justify-between" *ngFor="let article of articleVente!">
+            <div class="grid grid-cols-[100px_1fr] px-2 py-2 bg-white rounded-lg">
+                <div class="w-20 h-20 border mr-4 border-gray-200 shadow-lg rounded-full">
                     <img [src]="imagePath + article.photo" alt="" class="w-full h-full rounded-full object-cover">
                 </div>
+                <div>
+                    <div class="text-lg text-neutral-700 font-semibold">{{ article.label }}</div>
+                    <div class="text-sm text-gray-600">Quantité: {{ article.stock }}</div>
+                </div>
             </div>
-            <div class="w-full px-2 overflow-auto h-40">
+            <div class="w-full px-2 overflow-auto h-64">
                 <h1 class="text-lg font-semibold py-3">Articles de confection</h1>
                 <div class="bg-gray-100 rounded shadow grid grid-cols-[100px_1fr] h-14 mb-2"
                     *ngFor="let confection of article.articles_confection">

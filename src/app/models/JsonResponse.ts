@@ -1,3 +1,4 @@
+import { Article } from "./Article";
 import { Category } from "./Category";
 import { Provider } from "./Provider";
 
@@ -17,4 +18,9 @@ export interface Pagination<T> {
 export interface ArticleData {
     categories: Category[];
     providers: Provider[];
+}
+
+export interface ArticleVenteData {
+    categories_vente: Category[],
+    articles_confection: Article[]
 }

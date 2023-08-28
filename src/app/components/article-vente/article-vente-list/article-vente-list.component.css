@@ -1,0 +1,4 @@
+#article-list-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 450px);
+}

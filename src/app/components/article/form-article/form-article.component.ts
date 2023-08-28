@@ -4,6 +4,7 @@ import { Article } from 'src/app/models/Article';
 import { Category } from 'src/app/models/Category';
 import { ArticleData } from 'src/app/models/JsonResponse';
 import { Provider } from 'src/app/models/Provider';
+import { UploadImageService } from 'src/app/services/upload-image.service';
 import { environment } from 'src/environments/environment.development';
 
 @Component({
@@ -42,7 +43,7 @@ export class FormArticleComponent implements OnInit {
 		"category.required": "La catégorie de l'article est requis"
 	};
 
-	constructor(private formBuilder: FormBuilder) { }
+	constructor(private formBuilder: FormBuilder, private uploadImageService: UploadImageService) { }
 
 	ngOnInit(): void {
 		this.articleForm = this.formBuilder.group({
@@ -84,23 +85,6 @@ export class FormArticleComponent implements OnInit {
 		this.providersToChoice = this.articleData.providers.filter(provider => {
 			return !selectedProvidersId.includes(provider.id) && provider.fullname.toLowerCase().includes(searchKey.toLowerCase())
 		});
-	}
-
-	displayImage(fileInput: HTMLInputElement): void {
-		if (fileInput.files) {
-			this.image = fileInput.files[0];
-			const fileReader = new FileReader();
-			if (this.image) {
-				fileReader.readAsDataURL(this.image);
-			}
-			fileReader.onload = () => {
-				if (!/^\w+\.(jpe?g|png|svg|gif|webp|bmp)$/.test(this.image.name.toLowerCase())) {
-					this.imgPath = this.defaultImgPath;
-					return;
-				}
-				this.imgPath = fileReader.result as string
-			}
-		}
 	}
 
 	get label() {
@@ -158,6 +142,14 @@ export class FormArticleComponent implements OnInit {
 		this.selectedCategory = "";
 		this.imgPath = this.defaultImgPath;
 		this.articleForm.reset({label: "", stock: "", price: "", category: ""});
+	}
+
+	onInputFileChange(fileInput: HTMLInputElement) {
+		if (fileInput.files) {
+			this.uploadImageService.displayImage(fileInput.files[0]).then(base64Img => {
+				this.imgPath = base64Img ?? this.defaultImgPath;
+			});
+		}
 	}
 
 	handleChangeData(fieldName: string, newValue: any) {
