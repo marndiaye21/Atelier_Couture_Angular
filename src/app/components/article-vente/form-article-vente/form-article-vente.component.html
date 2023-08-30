@@ -1,12 +1,23 @@
 <section class="w-full mt-4">
     <form class="w-full" [formGroup]="articleVenteForm" (submit)="onSubmit()">
+        <!-- <div>
+            {{ label.errors | json }}
+            {{ category.errors | json }}
+            {{ category.errors | json }}
+            <div *ngFor="let f of articleConfection.controls">
+                {{ "confection" +  (f.errors | json) }}
+            </div>
+        </div> -->
         <div class="flex">
             <div class="field-section w-3/5 mr-8">
                 <div class="w-full flex space-x-4 items-center">
                     <div class="w-1/2 flex flex-col">
                         <label for="label" class="text-lg mb-2">Libellé</label>
-                        <input type="text" name="label" id="label" formControlName="label" (input)="generateRefernce()"
+                        <input type="text" name="label" id="label" formControlName="label" (input)="onArticleVenteInput()"
                             class="rounded px-2 py-1 border-2 border-cyan-950/60" placeholder="Ex: Chemise africain">
+                        <div *ngIf="(label.touched || label.dirty) && labelArticleVenteExiste" class="text-sm text-red-500 mt-1">
+                            Le libellé existe déjà
+                        </div>
                     </div>
 
                     <div class="w-1/2 flex flex-col">
@@ -38,24 +49,34 @@
                             d="M9.546.5a9.5 9.5 0 1 0 9.5 9.5 9.51 9.51 0 0 0-9.5-9.5ZM13.788 11h-3.242v3.242a1 1 0 1 1-2 0V11H5.304a1 1 0 0 1 0-2h3.242V5.758a1 1 0 0 1 2 0V9h3.242a1 1 0 1 1 0 2Z" />
                     </svg>
                 </div>
-                <div class="w-full border-2 border-gray-400 mt-3 rounded">
-                    <div class="w-full grid grid-cols-3 gap-3 border-b-2 border-gray-800">
+                <div class="w-full border-2 border-cyan-900/50 mt-3 rounded">
+                    <div class="w-full grid grid-cols-[1fr_1fr_100px] gap-3" style="background-color: #0a2e36aa;">
                         <label for="label_article_confection"
-                            class="text-lg mb-2 border-r-2 px-4 py-1 bg-transparent">Libellé</label>
-                        <label for="stock_article_confection" class="text-lg mb-2 py-1 bg-transparent">Quantité</label>
-                        <label for="action_buttons" class="text-lg mb-2 py-1 bg-transparent">Actions</label>
+                            class="text-lg mb-2 text-white px-4 py-1">Libellé</label>
+                        <label for="stock_article_confection" class="text-white text-lg mb-2 py-1">Quantité</label>
+                        <label for="action_buttons" class="text-lg mb-2 py-1 text-white">Actions</label>
                     </div>
 
                     <div formArrayName="articles_confection">
                         <div class="relative"
                             *ngFor="let article_confection of articleConfection.controls; let i = index">
-                            <div class="w-full grid grid-cols-3 gap-3 px-3 py-2" [formGroupName]="i">
-                                <input type="text" formControlName="label" name="label_{{ i }}" id="label_{{ i }}"
+                            <div class="w-full grid grid-cols-[1fr_1fr_100px] gap-3 px-3 py-2" [formGroupName]="i">
+                                <div>
+                                    <input type="text" formControlName="label" name="label_{{ i }}" id="label_{{ i }}"
                                     (input)="onArticleConfectionLabelInput($event, i)"
-                                    class="rounded px-2 py-1 border-2 border-cyan-950/60" placeholder="Ex: Bouton">
-                                <input type="text" formControlName="stock" name="stock_{{ i }}" id="stock_{{ i }}"
+                                    class="rounded px-2 py-1 border-2 border-cyan-950/60 w-full" placeholder="Ex: Bouton">
+                                    <div class="text-sm text-red-500 mt-1" *ngIf="article_confection.get('label')?.hasError('required') && article_confection.get('label')?.touched">
+                                        Le Libellé est requis
+                                    </div>
+                                </div>
+                                <div>
+                                    <input type="text" formControlName="stock" name="stock_{{ i }}" id="stock_{{ i }}"
                                     (input)="onArticleConfectionStockInput()"
-                                    class="rounded px-2 py-1 border-2 border-cyan-950/60" placeholder="Ex: 4">
+                                    class="rounded px-2 py-1 border-2 border-cyan-950/60 w-full" placeholder="Ex: 4">
+                                    <div class="text-sm text-red-500 mt-1" *ngIf=" article_confection.get('stock')?.hasError('required') && article_confection.get('stock')?.touched">
+                                        La quantité de l'article est requis
+                                    </div>
+                                </div>
                                 <div
                                     class="actions bg-gray-200 px-2 py-1 rounded flex items-center justify-center space-x-4">
                                     <div class="w-6 h-6 cursor-pointer bg-gray-400 rounded" title="vider les champs"
@@ -72,24 +93,26 @@
                                     </div>
                                 </div>
                             </div>
+                            
+                            <div class="w-full rounded-lg absolute z-50 top-full" *ngIf="index == i && searchArticleConfection.length">
+                                <ul class="w-1/2 max-h-[180px] rounded overflow-auto bg-slate-200">
+                                    <li *ngFor="let article_confection of searchArticleConfection"
+                                        (click)="selectArticleConfection(article_confection)"
+                                        class="px-4 py-2 hover:bg-slate-400 hover:text-white rounded cursor-pointer w-full grid grid-cols-[60px_1fr_50px] items-center">
+                                        <div class="w-10 h-10 rounded-full">
+                                            <img [src]="storageImagePath + article_confection.photo" class="rounded-full"
+                                                alt="">
+                                        </div>
+                                        <span>{{ article_confection.label }}</span>
+                                        <span class="text-lg font-semibold flex items-center justify-center">{{
+                                            article_confection.stock }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+
                         </div>
                     </div>
 
-                    <div class="w-full rounded-lg relative" *ngIf="searchArticleConfection.length">
-                        <ul class="w-1/2 absolute z-50 max-h-[180px] rounded overflow-auto bg-slate-200 top-0">
-                            <li *ngFor="let article_confection of searchArticleConfection"
-                                (click)="selectArticleConfection(article_confection)"
-                                class="px-4 py-2 hover:bg-slate-400 hover:text-white rounded cursor-pointer w-full grid grid-cols-[60px_1fr_50px] items-center">
-                                <div class="w-10 h-10 rounded-full">
-                                    <img [src]="storageImagePath + article_confection.photo" class="rounded-full"
-                                        alt="">
-                                </div>
-                                <span>{{ article_confection.label }}</span>
-                                <span class="text-lg font-semibold flex items-center justify-center">{{
-                                    article_confection.stock }}</span>
-                            </li>
-                        </ul>
-                    </div>
                 </div>
 
                 <div class="w-full flex mt-8">
@@ -108,10 +131,9 @@
                             <div class="text-sm text-red-500 mt-1" *ngIf="marge.errors?.['required']">
                                 {{ getErrorMessages("marge", marge.errors) }}
                             </div>
-                            {{ marge.errors | json }}
                             <div class="text-sm text-red-500 mt-1"
-                                *ngIf="marge.errors?.['margevalidator'] && !marge.errors?.['required'] && costManufacturing > 5000">
-                                La marge doit être comprise entre 5000 et {{ (costManufacturing / 3).toFixed(0) }}
+                                *ngIf="marge.errors?.['margevalidator'] && !marge.errors?.['required'] && +manufacturingCost.value > 5000">
+                                La marge doit être comprise entre 5000 et {{ (+manufacturingCost.value / 3).toFixed(0) }}
                             </div>
                         </div>
                     </div>
@@ -126,24 +148,23 @@
                     <div class="mb-4 flex items-center ml-10 " [class.hidden]="!promoCheck.value">
                         <label for="promo" class="block mr-4 text-lg">Valeur : </label>
                         <input type="text" id="promo" formControlName="promo"
-                            class="rounded px-2 py-1 border-2 border-cyan-950/60" placeholder="Ex: 10%" required>
+                            class="rounded px-2 py-1 border-2 border-cyan-950/60" placeholder="Ex: 10%">
                     </div>
                 </div>
 
                 <div class="w-full mt-2">
                     <label for="sales_price" class="block text-lg mb-2">Prix de vente : </label>
                     <input type="text" id="sales_price" formControlName="sales_price" readonly
-                        class="rounded px-2 py-1 border-2 border-cyan-950/60 w-full" placeholder="Ex: 176000 FCFA"
-                        required>
+                        class="rounded px-2 py-1 border-2 border-cyan-950/60 w-full" placeholder="Ex: 176000 FCFA">
                 </div>
 
             </div>
 
             <div class="flex flex-col items-center justify-between w-2/5">
-                <div class="relative top-20 border-2 border-cyan-900 shadow-lg h-[200px] w-[200px] rounded-full">
-                    <img [src]="imgPath" alt="" class="w-full h-full object-cover rounded-full">
+                <div class="relative top-10 shadow-2xl h-[290px] w-[290px] rounded-xl">
+                    <img [src]="imgPath" alt="" class="w-full h-full object-cover rounded-xl">
                     <div (click)="fileInput.click()"
-                        class="absolute top-0 left-0 w-full h-full rounded-full bg-black/20 text-lg hover:text-white hover:text-xl hover:bg-black/60 cursor-pointer flex items-center justify-center">
+                        class="absolute top-0 left-0 w-full h-full rounded-xl bg-black/20 text-lg hover:text-white hover:text-xl hover:bg-black/60 cursor-pointer flex items-center justify-center">
                         choisir une image
                     </div>
                     <input type="file" name="article-img" #fileInput accept="image/*" id="article-img"
@@ -157,9 +178,9 @@
                 </div>
             </div>
         </div>
-
         <div class="py-4 flex justify-end items-center w-full mt-4">
-            <button class="w-[250px] text-lg rounded bg-cyan-900 text-white py-2 disabled:bg-cyan-900/70" [disabled]="articleVenteForm.invalid">
+            <button class="w-[250px] text-lg rounded bg-cyan-900 text-white py-2 disabled:bg-cyan-900/70"
+                [disabled]="!articleVenteForm.valid || labelArticleVenteExiste">
                 Enregistrer
             </button>
         </div>

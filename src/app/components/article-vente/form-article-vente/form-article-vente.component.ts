@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { AbstractControl, AsyncValidatorFn, FormArray, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { Observable, of } from 'rxjs';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Article } from 'src/app/models/Article';
+import { ArticleVente } from 'src/app/models/ArticleVente';
 import { Category } from 'src/app/models/Category';
 import { ArticleVenteData } from 'src/app/models/JsonResponse';
 import { UploadImageService } from 'src/app/services/upload-image.service';
@@ -16,16 +16,15 @@ export class FormArticleVenteComponent implements OnInit {
 	articleVenteForm: FormGroup = <FormGroup>{};
 	@Input("articleVenteDataForm") articleVenteData: ArticleVenteData = <ArticleVenteData>{};
 	@Output() onAddArticleVente: EventEmitter<FormData> = new EventEmitter();
+	@Output() onArticleVenteLabelChange: EventEmitter<string> = new EventEmitter();
 	searchArticleConfection: Article[] = <Article[]>[];
 	storageImagePath: string = environment.storage;
 	index: number = 0;
-	stockQuantityValid: boolean = true;
-	stockQuantityErrors: string[] = [];
 	selectedArticleConfection: Article[] = <Article[]>[];
-	costManufacturing: number = 0;
+	labelArticleVenteExiste: boolean = false;
 
-	categoryOrder: number = 0;
 	selectedCategory: Category = <Category>{}
+	articleVenteToEdit: ArticleVente|null = <ArticleVente>{};
 	defaultImgPath: string = "assets/default.jpg";
 	imgPath: string = this.defaultImgPath;
 
@@ -48,16 +47,12 @@ export class FormArticleVenteComponent implements OnInit {
 			sales_price: this.formBuilder.control("", [Validators.required, Validators.min(0), Validators.pattern("^[0-9]+$")]),
 			category_id: this.formBuilder.control("", [Validators.required]),
 			manufacturing_cost: "",
-			marge: this.formBuilder.control("", {
-				validators: [Validators.required],
-				asyncValidators: [this.margeAsyncValidator(+this.costManufacturing)],
-				updateOn: 'change'
-			  }),
+			marge: this.formBuilder.control("", [Validators.required, this.margeValidator()]),
 			promoCheckControl: this.formBuilder.control(false),
-			promo: this.formBuilder.control("", [Validators.required]),
+			promo: "",
 			articles_confection: this.formBuilder.array([], Validators.required),
 			reference: this.formBuilder.control("Ref", [Validators.required]),
-			photo: ""
+			photo: ["", Validators.required]
 		});
 	}
 
@@ -85,6 +80,10 @@ export class FormArticleVenteComponent implements OnInit {
 		return this.articleVenteForm.controls['category_id'];
 	}
 
+	get promo() {
+		return this.articleVenteForm.controls['promo'];
+	}
+
 	get articleConfection() {
 		return this.articleVenteForm.controls['articles_confection'] as FormArray
 	}
@@ -101,32 +100,60 @@ export class FormArticleVenteComponent implements OnInit {
 		return this.articleVenteForm.controls['photo'];
 	}
 
+	onArticleVenteInput() {
+		this.generateRefernce();
+		if (this.label.value.length >= 3) {
+			this.onArticleVenteLabelChange.emit(this.label.value);
+		}
+	}
+
 	onCategoryChange(event: Event) {
 		const target = event.target as HTMLSelectElement;
 		let category = this.articleVenteData.categories_vente.find(cat => cat.id == +target.selectedOptions[0].value)
 		this.selectedCategory = category as Category;
 		this.generateRefernce();
-		console.log(this.selectedCategory);
 	}
 
 	addArticleConfectionGroup() {
+		for (const control of this.articleConfection.controls) {
+			if (control.get('label')?.value == "" || control.get('stock')?.value == "") {
+				return;
+			}
+		}
+
 		this.articleConfection.push(this.formBuilder.group({
 			id: 0,
 			label: this.formBuilder.control("", [Validators.required]),
-			stock: this.formBuilder.control("", [Validators.required]),
+			stock: this.formBuilder.control({ value: "", disabled: true }, [Validators.required]),
 			price: this.formBuilder.control("", [Validators.required]),
+			category: "",
 		}));
+		this.observeNewArticleGroup();
+	}
+
+	observeNewArticleGroup() {
+		this.articleConfection.at(this.articleConfection.controls.length - 1).get('label')?.valueChanges.subscribe((value) => {
+			let found = this.selectedArticleConfection.find(article => article.label == value);
+			if (!value || !found) {
+				this.articleConfection.at(this.articleConfection.controls.length - 1).get('stock')?.reset();
+				this.manufacturingCost.reset();
+				this.sales_price.reset();
+				this.articleConfection.at(this.articleConfection.controls.length - 1).get('stock')?.disable();
+				return;
+			}
+
+			this.articleConfection.at(this.articleConfection.controls.length - 1).get('stock')?.enable();
+		})
 	}
 
 	onArticleConfectionStockInput() {
 		this.manufacturingCost.setValue(this.calculateManufacturingCost());
-		this.costManufacturing = +this.manufacturingCost.value
 	}
 
 	calculateManufacturingCost() {
 		let manufacturingCostTotal = 0;
 		this.articleConfection.controls.forEach(article => {
-			if (article.value.stock) {
+			if (article.value.stock && !isNaN(article.value.stock)) {
 				manufacturingCostTotal += article.value.price * article.value.stock
 			}
 		});
@@ -139,17 +166,16 @@ export class FormArticleVenteComponent implements OnInit {
 		this.searchArticleConfection = [];
 		if (target.value.length) {
 			this.searchArticleConfection = this.articleVenteData.articles_confection.filter(
-				articleConf => articleConf.label.toLocaleLowerCase().includes(target.value.toLocaleLowerCase())
+				articleConf => articleConf.label.toLowerCase().includes(target.value.toLowerCase())
 			);
 		}
 	}
 
 	selectArticleConfection(article_confection: Article) {
 		this.selectedArticleConfection.push(article_confection);
-		this.articleConfection.at(this.index).patchValue({
-			label: article_confection.label, price: article_confection.price, id: article_confection.id
-		})
+		this.articleConfection.at(this.index).patchValue({ ...article_confection, stock: "" })
 		this.searchArticleConfection = [];
+		this.manufacturingCost.setValue(this.calculateManufacturingCost());
 	}
 
 	clearSearchArticleConfection() {
@@ -167,11 +193,14 @@ export class FormArticleVenteComponent implements OnInit {
 	onClickDeleteArticleConfection(index: number) {
 		this.removeArticleConfectionAt(index);
 		this.articleConfection.removeAt(index);
+		this.manufacturingCost.setValue(this.calculateManufacturingCost());
 	}
 
 	onMargeChange() {
-		this.marge.setAsyncValidators(this.margeAsyncValidator(this.costManufacturing));
-		this.sales_price.setValue(+this.marge.value + (+this.costManufacturing));
+		this.sales_price.reset();
+		if (this.marge.valid) {
+			this.sales_price.setValue(+this.marge.value + (+this.manufacturingCost.value));
+		}
 	}
 
 	onInputFileChange(fileInput: HTMLInputElement) {
@@ -184,8 +213,8 @@ export class FormArticleVenteComponent implements OnInit {
 	}
 
 	generateRefernce() {
-		this.reference.setValue('REF' + 
-			(this.label.value.length >= 3 ? '-' + this.label.value.slice(0, 3) : '') + 
+		this.reference.setValue('REF' +
+			(this.label.value.length >= 3 ? '-' + this.label.value.slice(0, 3) : '') +
 			(this.selectedCategory.label ? '-' + this.selectedCategory.label : '') +
 			(this.selectedCategory.order != undefined ? '-' + (+this.selectedCategory.order + 1) : '')
 		)
@@ -195,17 +224,47 @@ export class FormArticleVenteComponent implements OnInit {
 		return this.errorMessages[fieldName + "." + Object.keys(errors)[0]];
 	}
 
-	margeAsyncValidator(manufacturingCost: number): AsyncValidatorFn {
-		return (control: AbstractControl): Observable<ValidationErrors | null> => {
-			if (+control.value >= 5000 && +control.value <= manufacturingCost / 3) {
-				return of(null);
+	margeValidator(): ValidatorFn {
+		return (control: AbstractControl): ValidationErrors | null => {
+			if (+control.value >= 5000 && +control.value <= this.manufacturingCost.value / 3) {
+				return null;
 			} else {
-				return of({ margevalidator: true });
+				return { margevalidator: true };
 			}
 		};
 	}
 
+	articleConfectionHasType(categoryType: string) {
+		return this.articleConfection.controls.some(control => control.value.category.label.toLowerCase() == categoryType);
+	}
+
+	fillForm(articleVente: ArticleVente) {
+		this.articleVenteForm.patchValue({ ...articleVente, category_id: articleVente.category.id });
+		this.imgPath = environment.storage + articleVente.photo;
+		this.articleConfection.clear();
+		articleVente.articles_confection.forEach(article => {
+			this.articleConfection.push(this.formBuilder.group({
+				id: 0,
+				label: this.formBuilder.control(article.label, [Validators.required]),
+				stock: this.formBuilder.control(article.pivot.article_confection_quantity, [Validators.required]),
+				price: this.formBuilder.control(article.price, [Validators.required]),
+				category: article.category.label,
+			}));
+			this.observeNewArticleGroup();
+		})
+	}
+
+	resetForm() {
+		this.articleVenteForm.reset();
+		this.articleConfection.clear();
+		this.imgPath = this.defaultImgPath;
+	}
+
 	onSubmit() {
+		if (!this.articleConfectionHasType("tissu") || !this.articleConfectionHasType("fil") || !this.articleConfectionHasType("bouton")) {
+			return;
+		}
+
 		const formData = new FormData;
 		for (const [constrolName, constrolValue] of Object.entries(this.articleVenteForm.controls)) {
 			if (constrolName == "articles_confection") {
@@ -217,7 +276,6 @@ export class FormArticleVenteComponent implements OnInit {
 				formData.append(constrolName, constrolValue.value);
 			}
 		}
-
 		this.onAddArticleVente.emit(formData);
 	}
 }

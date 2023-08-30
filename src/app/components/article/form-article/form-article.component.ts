@@ -146,6 +146,7 @@ export class FormArticleComponent implements OnInit {
 
 	onInputFileChange(fileInput: HTMLInputElement) {
 		if (fileInput.files) {
+			this.image = fileInput.files[0];
 			this.uploadImageService.displayImage(fileInput.files[0]).then(base64Img => {
 				this.imgPath = base64Img ?? this.defaultImgPath;
 			});
@@ -199,7 +200,6 @@ export class FormArticleComponent implements OnInit {
 			}
 			this.handleChangeProvider();
 			console.log(this.modifiedArticle);
-			
 			this.addNewArticle.emit(this.modifiedArticle);
 			return;
 		}
